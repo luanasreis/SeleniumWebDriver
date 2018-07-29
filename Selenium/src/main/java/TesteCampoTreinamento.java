@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.After;
@@ -16,6 +17,7 @@ public class TesteCampoTreinamento {
 	private WebDriver driver;
 	private DSL dsl;
 	
+	
 	@Before
 	public void incializa() {
 		//WebDriver driver = new FirefoxDriver();
@@ -23,8 +25,10 @@ public class TesteCampoTreinamento {
 		driver.manage().window().setSize(new Dimension(1200, 750));
 		driver.get("file:///" + System.getProperty("user.dir") + "/src/main/resources/componentes.html"); //abre o arquivo que coloquei na pasta de resources do projeto, para ficar um endereço generico
 		dsl = new DSL(driver);
+		
 	}
-	
+
+
 	@After
 	public void finaliza() {
 		driver.quit();
@@ -39,8 +43,8 @@ public class TesteCampoTreinamento {
 		
 		// Escrever algo em um campo de texto
 		//driver.findElement(By.id("elementosForm:nome")) digo ao selenium qual é o campo que eu quero interagir
-		//driver.findElement(By.id("elementosForm:nome")).sendKeys("Teste de escrita"); //encontro o id desse elemento inspecionando a página com o botão direito>inspecionar e procuro o id ou encontro o id do elemento pelo SeleniumIDE, fazendo a gravação escrevendo algo no campo e pegando o id desse campo, neste caso o id obtido lá foi "id=elementosForm:nome", então uso a função do selenium webdriver para setar o ID do campo obtido no selenium ide
-		dsl.escreve("elementosForm:nome", "Teste de escrita" ); //USANDO O METODO DSL PARA REUSO											// sendKeys é o que vai testear de a frase "Teste de escrita" vai ser escrito no elemento do forms correto, no caso elementosForm:nome, ou seja, se aquele campo está recebendo uma entrada de texto			
+		//*driver.findElement(By.id("elementosForm:nome")).sendKeys("Teste de escrita"); //encontro o id desse elemento inspecionando a página com o botão direito>inspecionar e procuro o id ou encontro o id do elemento pelo SeleniumIDE, fazendo a gravação escrevendo algo no campo e pegando o id desse campo, neste caso o id obtido lá foi "id=elementosForm:nome", então uso a função do selenium webdriver para setar o ID do campo obtido no selenium ide
+		dsl.escrever("elementosForm:nome", "Teste de escrita" ); //USANDO O METODO DSL PARA REUSO											// sendKeys é o que vai testear de a frase "Teste de escrita" vai ser escrito no elemento do forms correto, no caso elementosForm:nome, ou seja, se aquele campo está recebendo uma entrada de texto			
 		
 		
 		//Verifica se o que eu escrevi em um campo realmente foi escrito
@@ -52,6 +56,17 @@ public class TesteCampoTreinamento {
 	}
 	
 	@Test
+	public void testeTextFielDuplo() {
+		dsl.escrever("elementosForm:nome", "Nome1");
+		Assert.assertEquals("Nome1", dsl.obterValorCampo("elementosForm:nome"));
+		
+		dsl.escrever("elementosForm:nome", "Nome2");
+		Assert.assertEquals("Nome2", dsl.obterValorCampo("elementosForm:nome"));
+
+				
+	}
+	
+	@Test
 	public void testTextArea() { //caixa de texto com mais de uma linha
 		//WebDriver driver = new FirefoxDriver();
 		//driver.manage().window().setSize(new Dimension(1200, 750));
@@ -59,7 +74,7 @@ public class TesteCampoTreinamento {
 		
 		//DIGITA NA CAIXA DE TEXTO
 		//driver.findElement(By.id("elementosForm:sugestoes")).sendKeys("Teste na caixa de texto\n\nteste em outra linha");
-		dsl.escreve("elementosForm:sugestoes", "Teste na caixa de texto\n\nteste em outra linha" ); //USANDO O METODO DSL PARA REUSO											// sendKeys é o que vai testear de a frase "Teste de escrita" vai ser escrito no elemento do forms correto, no caso elementosForm:nome, ou seja, se aquele campo está recebendo uma entrada de texto			
+		dsl.escrever("elementosForm:sugestoes", "Teste na caixa de texto\n\nteste em outra linha" ); //USANDO O METODO DSL PARA REUSO											// sendKeys é o que vai testear de a frase "Teste de escrita" vai ser escrito no elemento do forms correto, no caso elementosForm:nome, ou seja, se aquele campo está recebendo uma entrada de texto			
 		
 		
 		// VERIFICA SE O TEXTO DIGITADO REALMENTE FOI PARA A CAIXA DE TEXTO
@@ -79,11 +94,11 @@ public class TesteCampoTreinamento {
 	
 		//VERIFICAR SE PODE CLICAR O ELEMENTO RADIO BOTTON
 		//driver.findElement(By.id("elementosForm:sexo:0")).click();
-		dsl.clicaRadio("elementosForm:sexo:0"); //USANDO DSL PARA REUSO
+		dsl.clicarRadio("elementosForm:sexo:0"); //USANDO DSL PARA REUSO
 		
 		// VERIFICAR SE O ELEMENTO REALMENTE FOI CLICADO
 		//Assert.assertTrue(driver.findElement(By.id("elementosForm:sexo:0")).isSelected());
-		Assert.assertTrue(dsl.checaRadioIsSelected("elementosForm:sexo:0"));
+		Assert.assertTrue(dsl.isRadioMarcado("elementosForm:sexo:0"));
 		
 		
 		
@@ -143,15 +158,14 @@ public class TesteCampoTreinamento {
 		dsl.selecionarCombo("elementosForm:esportes", "Natacao");
 		dsl.selecionarCombo("elementosForm:esportes", "Corrida");
 		dsl.selecionarCombo("elementosForm:esportes", "O que eh esporte?");
+
+		List<String> opcoesMarcadas = dsl.obterValoresCombo("elementosForm:esportes");
+		Assert.assertEquals(3, opcoesMarcadas.size());
 		
-		//Verifica se o número de elementos selecionados no combo de Multipla escolha foi 3
-		List<WebElement> allSelectedOptions = combo.getAllSelectedOptions();
-		Assert.assertEquals(3, allSelectedOptions.size());
-		
-		//Deseleciona um opçao do combo
-		combo.deselectByVisibleText("Corrida");
-		allSelectedOptions = combo.getAllSelectedOptions();
-		Assert.assertEquals(2, allSelectedOptions.size());
+		dsl.deselecionarCombo("elementosForm:esportes", "Corrida");
+		opcoesMarcadas = dsl.obterValoresCombo("elementosForm:esportes");
+		Assert.assertEquals(2, opcoesMarcadas.size());
+		Assert.assertTrue(opcoesMarcadas.containsAll(Arrays.asList("Natacao", "O que eh esporte?")));
 		
 		//driver.quit();
 		
@@ -166,7 +180,7 @@ public class TesteCampoTreinamento {
 		//driver.findElement(By.id("buttonSimple")).click();
 		dsl.clicarBotao("buttonSimple");
 		//Assert.assertEquals("Obrigado!", driver.findElement(By.id("buttonSimple")).getAttribute("value"));
-		Assert.assertEquals("Obrigado!", dsl.obterAtributoBotao("buttonSimple"));
+		Assert.assertEquals("Obrigado!", dsl.obterValueElemento("buttonSimple"));
 		
 		
 		//ou
@@ -189,7 +203,7 @@ public class TesteCampoTreinamento {
 		
 		//Assert.fail(); - PARA DAR BARRA VERMELHA
 		
-		Assert.assertEquals("Voltou!", dsl.obterUmTexto("resultado"));
+		Assert.assertEquals("Voltou!", dsl.obterTexto("resultado"));
 		
 		
 		//driver.quit();
@@ -208,7 +222,7 @@ public class TesteCampoTreinamento {
 		//verifica um texto em uma determinada posicao da pagina
 		//Assert.assertEquals("Campo de Treinamento", driver.findElement(By.tagName("body")).getText());
 		
-		Assert.assertEquals("Cuidado onde clica, muitas armadilhas...", dsl.obterUmTexto(By.className("facilAchar")));
+		Assert.assertEquals("Cuidado onde clica, muitas armadilhas...", dsl.obterTexto(By.className("facilAchar")));
 		
 		//driver.quit();
 	}
